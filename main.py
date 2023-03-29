@@ -1,16 +1,32 @@
 import re
 import json
 import tensorflow as tf
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from keras.preprocessing.text import tokenizer_from_json
 from keras.utils import pad_sequences
 
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+nltk.download('punkt')
+nltk.download('wordnet')
+
 app = FastAPI()
+
+#middleware
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # text preprocessing
 def process_text(text):
@@ -41,7 +57,7 @@ with open(r"model_building\tokenizer.json") as f:
 
 # query processor
 class QueryString(BaseModel):
-    query: str
+    text: str
 
 
 # landing api
@@ -82,5 +98,5 @@ def predict_sentiment(text):
 
     return {
         "sentiment": senti_labels[0],
-        "confidence": round(pred[0][0], 3)
+        "confidence": str(round(pred[0][0], 3))
         }
